@@ -2,32 +2,39 @@ import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-function Login({user,setUser}) {
+function Login({ user, setUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-const handleLogin = async () => {
-  setError("");
-  setLoading(true);
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
 
-  try {
-    const response = await axios.post(
-      "http://localhost:5000/login", 
-      { username, password }, 
-      { withCredentials: true }  
-    );
-    
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/login",
+        { username, password },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
 
-    setUser({ username });
-    alert("Login successful");
-    setLoading(false);
-  } catch (err) {
-    setError(err.response?.data?.message || "Login failed");
-    setLoading(false);
-  }
-};
+      if (response.data.message === "Login successful") {
+        setUser({ username });
+        alert("Login successful");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="login-container">
