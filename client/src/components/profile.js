@@ -1,32 +1,52 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function Profile({user,setUser}) {
-  
+function Profile({ user, setUser }) {
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/profile", { withCredentials: true })
-      .then((response) => {
-        setUser(response.data.user); // Store the user data in the state
-      })
-      .catch((error) => {
-        console.error(error);
-        setUser(null); // Set user to null if not logged in
-      });
-  }, []);
+    const checkSession = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/profile", {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
 
-  console.log("this is user: "+ user);
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
+        setError("Failed to fetch profile");
+        setUser(null);
+      }
+    };
+
+    checkSession();
+  }, [setUser]);
 
   const handleLogout = async () => {
-    await axios.post("http://localhost:5000/logout", {}, { withCredentials: true });
-    setUser(null); // Reset the user state after logout
-    alert("Logged out");
+    try {
+      await axios.post("http://localhost:5000/logout", {}, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      setUser(null);
+      alert("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Failed to logout");
+    }
   };
 
   return (
     <div>
       <h2>Profile</h2>
+      {error && <div className="error-message">{error}</div>}
       {user ? (
         <>
           <p>Welcome, {user.username}!</p>
